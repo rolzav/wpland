@@ -57,11 +57,10 @@ Button triggers to form.
 
 Please check if all is good or no, if some code or anything is missing or incorrect, please clarify and look for how could it be fixed the right way!
 
+ALL CONTENT ABOVE THIS SENTENCE IS JFYI, dear Copilot.
+okay...
 
 # Here is the files I have so far:
-
-
-Okay, dear, Copilot - here we are here is the current code:
 
 #####/front-page.php:
 #####/functions.php:
@@ -71,15 +70,15 @@ Okay, dear, Copilot - here we are here is the current code:
 AND ##### CSS CODE:
 
 Okay,
-plase can you assist and guide me through this to solve it properly?
+plase assist and guide me through this to solve (if something) properly.
 
-Remember we use only best coding practices, that relies on Core php and javascript that will never break down, because of core functionality greatly functional performance.
+Please, also, would be nice if could rememberwhile re-checking that we use only best coding practices, that relies on Core php and javascript that will never break down, because of core functionality greatly functional performance.
 Code must be maintainable easily. Less is more. Simplicity is the key to success!
 
-okay:
+okay: file will start with "##########"
 
 
-#####functions.php:
+##########functions.php:
 <?php
 
 /**
@@ -295,7 +294,7 @@ add_action('wp_ajax_load_modulebox', 'load_modulebox_content');
 add_action('wp_ajax_nopriv_load_modulebox', 'load_modulebox_content');
 ?>
 
-#####front-page.php:
+##########front-page.php:
 <?php
 get_header(); ?>
 
@@ -436,7 +435,7 @@ jQuery(document).ready(function($) {
 get_footer();
 ?>
 
-#####/assets/js/custom.js:
+##########/assets/js/custom.js:
 document.addEventListener("DOMContentLoaded", function () {
   var lightbox = document.getElementById("lightbox");
   var lightboxImg = document.getElementById("lightbox-img");
@@ -466,7 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-#####/assets/js/modulebox-ajax.js:
+##########/assets/js/modulebox-ajax.js:
 jQuery(document).ready(function ($) {
   function attachEventHandlers() {
     // Handle 'Go to Message Us' button click
@@ -519,7 +518,7 @@ jQuery(document).ready(function ($) {
 });
 
 
-#####/assets/css/style.scss:
+##########/assets/css/style.scss:
 .carousel-item {
   height: 100%;
 }
