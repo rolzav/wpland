@@ -1,14 +1,15 @@
 Hello, Copilot!
 
-SETUP:
--WordPress installed
--Parent theme Bootscore
--Child theme of Bootscore
--front-page.php created.
+# SETUP:
+- WordPress installed
+- Parent theme Bootscore
+- Child theme of Bootscore
+- front-page.php created.
+- modulebx-ajax.js
 
 So far this is setup.
 
-WHAT IS NEEDED?
+# WHAT IS NEEDED?
 
 I am trying to achieve to have Modulebox cpt (already added in functions.php please check)
 Then need to add gallery (WP pre-built-in functionality, that handles well and saves correctly)
@@ -20,7 +21,7 @@ Button triggers to form.
 Please check if all is good or no, if some code or anything is missing or incorrect, please clarify and look for how could it be fixed the right way!
 
 
-Here is the files I have so far:
+# Here is the files I have so far:
 
 ########## FRONT-PAGE.PHP FILE CODE:
 <?php
@@ -83,30 +84,6 @@ get_header(); ?>
     </div>
 </div>
 
-<script>
-jQuery(document).ready(function($) {
-    $("#modulebox_list").on("click", "a", function(e) {
-        e.preventDefault();
-        let moduleID = $(this).data("id");
-
-        $.ajax({
-            url: ajax_object.ajaxurl,
-            type: "POST",
-            data: {
-                action: "load_modulebox",
-                module_id: moduleID
-            },
-            success: function(response) {
-                if (response.success) {
-                    $(".module-details").html(response.data);
-                }
-            }
-        });
-    });
-});
-</script>
-
-
 <div class="container text-center py-4">
     <h2 class="display-5">Message Us</h2>
     <div class="d-flex justify-content-center">
@@ -156,11 +133,11 @@ function bootscore_child_enqueue_styles()
 
 function enqueue_ajax_script()
 {
-  wp_enqueue_script('modulebox-ajax', get_stylesheet_directory_uri() . '/js/modulebox-ajax.js', ['jquery'], null, true);
+    wp_enqueue_script('modulebox-ajax', get_stylesheet_directory_uri() . '/js/modulebox-ajax.js', array('jquery'), null, true);
 
-  wp_localize_script('modulebox-ajax', 'ajax_object', [
-    'ajaxurl' => admin_url('admin-ajax.php'),
-  ]);
+    wp_localize_script('modulebox-ajax', 'ajax_object', [
+        'ajaxurl' => admin_url('admin-ajax.php'),
+    ]);
 }
 add_action('wp_enqueue_scripts', 'enqueue_ajax_script');
 
@@ -319,5 +296,56 @@ add_action('wp_ajax_load_modulebox', 'load_modulebox_content');
 add_action('wp_ajax_nopriv_load_modulebox', 'load_modulebox_content');
 
 
+
+and also the ########## modulebox-ajax.js FILE CODE:
+jQuery(document).ready(function ($) {
+    function attachEventHandlers() {
+        // Handle 'Go to Message Us' button click
+        $(".go-to-message-us").off("click").on("click", function () {
+            var postTitle = $(this).data("title");
+            $("#post-title").val(postTitle);
+            $("#your-subject").val(postTitle);
+        });
+    }
+
+    // Attach initial event handlers
+    attachEventHandlers();
+
+    // Handle module link click
+    $("#modules__url a").click(function (e) {
+        e.preventDefault();
+        var postID = $(this).data("id");
+
+        $.ajax({
+            url: ajax_object.ajaxurl,
+            type: "POST",
+            data: {
+                action: "load_module_content",
+                nonce: ajax_object.nonce,
+                post_id: postID,
+            },
+            success: function (response) {
+                if (response.success) {
+                    // Update the gallery (left col-7)
+                    $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+                    // Update the content (right col-5)
+                    $(".module-details").html(response.data.content);
+
+                    // Reinitialize the carousel
+                    $("#modulesCarousel").carousel();
+
+                    // Reinitialize Lightbox
+                    lightbox.init();
+
+                    // Reattach event handlers for the new content
+                    attachEventHandlers();
+                } else {
+                    alert("Failed to load content.");
+                }
+            },
+        });
+    });
+});
 
 Thanks for reading this far! Is there anything you can tell?
