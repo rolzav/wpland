@@ -4,8 +4,7 @@ Hello, Copilot!
 - WordPress installed
 - Parent theme Bootscore
 - Child theme of Bootscore
-- front-page.php created.
-- modulebx-ajax.js
+- USER and AI.Copilot Assistance
 
 So far this is setup.
 
@@ -348,6 +347,13 @@ jQuery(document).ready(function ($) {
     });
 });
 
+###################
+###################
+###################
+###################
+###################
+###################
+###################
 
 //
 //
@@ -356,7 +362,7 @@ jQuery(document).ready(function ($) {
 //
 //
 //
-"######LATEST-DEVELOPMENT-CODE#########"
+"######Earlier-DEVELOPMENT-CODE JFYI - skip till next big #-block #########"
 
 NEW VERSION FOR COPILOT TO KNOW! IMPORTANT!
 HEre ve go:
@@ -760,4 +766,544 @@ Ensure the gallery section and AJAX functionality are correctly implemented.
 
 Thanks for reading/learning this far! Please, anaylize, clarify and please providea a ready to go solution as the best practices maintanable code.
 
+
+###################
+###################
+###################
+###################
+###################
+###################
+###################
+
+AHTUNG AHTUNG AHTUNG- ACTUAL INFORMATION NOW. DATA THAT IS RUNING RIGHT NOW ON THE LIVE SERVER.
+
+Okay, dear, Copilot - here we are here is the current code:
+
+Thanks, okay, I just added the all code you just gave me and it is okay for now, Please, can we go on and adjust the UI/frontend? I mean, specifically How can it be set to have propper image (carousel for modal) square size, full device height and right side col-5 Content stays up to the top. Please can you do these canges? I added  the file and in the file You need to look for "######LATEST-DEVELOPMENT-CODE#########" to see what is current live production code version. And please go on and work with that, that mainly Work.  Anything Till the part of the promt where "######LATEST-DEVELOPMENT-CODE#########", everything before is JFYI.
+
+Actual code is after "######LATEST-DEVELOPMENT-CODE#########"
+
+Okay,
+plase can you assist and guide me through this to solve it properly, Copilot?
+Thank You.
+
+
+#####functions.php:
+<?php
+
+/**
+ * @package Bootscore Child
+ *
+ * @version 6.0.0
+ */
+
+// Exit if accessed directly
+defined('ABSPATH') || exit;
+
+/**
+ * Enqueue scripts and styles
+ */
+add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
+function bootscore_child_enqueue_styles()
+{
+  // Compiled main.css
+  $modified_bootscoreChildCss = date('YmdHi', filemtime(get_stylesheet_directory() . '/assets/css/main.css'));
+  wp_enqueue_style('main', get_stylesheet_directory_uri() . '/assets/css/main.css', array('parent-style'), $modified_bootscoreChildCss);
+
+  // style.css
+  wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+
+  // Lightbox CSS
+  wp_enqueue_style('lightbox-css', get_stylesheet_directory_uri() . '/assets/css/styles.css');
+
+  // custom.js
+  // Get modification time. Enqueue file with modification date to prevent browser from loading cached scripts when file content changes.
+  $modificated_CustomJS = date('YmdHi', filemtime(get_stylesheet_directory() . '/assets/js/custom.js'));
+  wp_enqueue_script('custom-js', get_stylesheet_directory_uri() . '/assets/js/custom.js', array('jquery'), $modificated_CustomJS, false, true);
+
+  // Lightbox JS
+  wp_enqueue_script('lightbox-js', get_stylesheet_directory_uri() . '/assets/js/scripts.js', array('jquery'), null, true);
+}
+
+/**
+ * Enqueue AJAX script for Modulebox
+ */
+function enqueue_ajax_script()
+{
+  wp_enqueue_script('modulebox-ajax', get_stylesheet_directory_uri() . '/js/modulebox-ajax.js', array('jquery'), null, true);
+
+  wp_localize_script('modulebox-ajax', 'ajax_object', [
+    'ajaxurl' => admin_url('admin-ajax.php'),
+  ]);
+}
+add_action('wp_enqueue_scripts', 'enqueue_ajax_script');
+
+// Register MODULEBOX Custom Post Type
+function register_modulebox_cpt()
+{
+  $args = [
+    'label'         => __('ModuleBox', 'textdomain'),
+    'public'        => true,
+    'show_in_rest'  => true, // Enables REST API support
+    'menu_icon'     => 'dashicons-grid-view',
+    'supports'      => ['title', 'editor', 'thumbnail'],
+    'has_archive'   => false,
+    'rewrite'       => ['slug' => 'modulebox'],
+  ];
+  register_post_type('modulebox', $args);
+}
+add_action('init', 'register_modulebox_cpt');
+
+// Add Gallery Functionality in the Editor
+// Add "Add the Gallery" Button
+function modulebox_gallery_meta_box()
+{
+  add_meta_box(
+    'modulebox_gallery',
+    __('Module Gallery', 'textdomain'),
+    'modulebox_gallery_callback',
+    'modulebox',
+    'normal',
+    'high'
+  );
+}
+add_action('add_meta_boxes', 'modulebox_gallery_meta_box');
+
+function modulebox_gallery_callback($post)
+{
+  wp_nonce_field('modulebox_gallery_nonce', 'modulebox_gallery_nonce_field');
+  $gallery = get_post_meta($post->ID, '_modulebox_gallery', true) ?: [];
+?>
+<div id="modulebox-gallery-container">
+    <?php foreach ($gallery as $image_id) : ?>
+    <div class="gallery-image">
+        <?php echo wp_get_attachment_image($image_id, 'thumbnail'); ?>
+        <input type="hidden" name="modulebox_gallery[]" value="<?php echo esc_attr($image_id); ?>">
+        <button class="remove-image">✖</button>
+    </div>
+    <?php endforeach; ?>
+</div>
+<button id="add-gallery-images" class="button"><?php _e('Add the Gallery', 'textdomain'); ?></button>
+
+<script>
+jQuery(document).ready(function($) {
+    let frame;
+    $('#add-gallery-images').on('click', function(e) {
+        e.preventDefault();
+        if (frame) frame.open();
+        frame = wp.media({
+            title: '<?php _e('Select Images', 'textdomain'); ?>',
+            multiple: true,
+            library: {
+                type: 'image'
+            }
+        }).on('select', function() {
+            let images = frame.state().get('selection').toJSON();
+            images.forEach(image => {
+                $('#modulebox-gallery-container').append(`
+                        <div class="gallery-image">
+                            <img src="${image.sizes.thumbnail.url}" />
+                            <input type="hidden" name="modulebox_gallery[]" value="${image.id}">
+                            <button class="remove-image">✖</button>
+                        </div>
+                    `);
+            });
+        }).open();
+    });
+
+    $(document).on('click', '.remove-image', function(e) {
+        e.preventDefault();
+        $(this).closest('.gallery-image').remove();
+    });
+});
+</script>
+
+<style>
+.gallery-image {
+    display: inline-block;
+    margin: 5px;
+    position: relative;
+}
+
+.remove-image {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+}
+</style>
+<?php
+}
+
+function save_modulebox_gallery($post_id)
+{
+  if (!isset($_POST['modulebox_gallery_nonce_field']) || !wp_verify_nonce($_POST['modulebox_gallery_nonce_field'], 'modulebox_gallery_nonce')) return;
+  if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+  if (!current_user_can('edit_post', $post_id)) return;
+
+  update_post_meta($post_id, '_modulebox_gallery', isset($_POST['modulebox_gallery']) ? array_map('intval', $_POST['modulebox_gallery']) : []);
+}
+add_action('save_post', 'save_modulebox_gallery');
+
+// AJAX Handler for Content Update
+function load_modulebox_content()
+{
+  if (!isset($_POST['module_id']) || !is_numeric($_POST['module_id'])) {
+    wp_send_json_error('Invalid request.');
+  }
+
+  $post_id = intval($_POST['module_id']);
+  $post = get_post($post_id);
+
+  if (!$post) {
+    wp_send_json_error('Module not found.');
+  }
+
+  // Fetch the gallery images
+  $gallery = get_post_meta($post_id, '_modulebox_gallery', true);
+  $gallery = maybe_unserialize($gallery);
+
+  ob_start();
+  if (!empty($gallery) && is_array($gallery)) :
+    $first = true;
+    foreach ($gallery as $image_id) : ?>
+<div class="carousel-item <?php echo $first ? 'active' : ''; ?>">
+    <img src="<?php echo esc_url(wp_get_attachment_url($image_id)); ?>" alt="Featured Image"
+        class="d-block w-100 h-100 object-fit-cover featured-image">
+</div>
+<?php
+      $first = false;
+    endforeach;
+  endif;
+  $gallery_content = ob_get_clean();
+
+  ob_start();
+  ?>
+<h2><?php echo esc_html($post->post_title); ?></h2>
+<?php echo apply_filters('the_content', $post->post_content); ?>
+<?php if (has_post_thumbnail($post_id)) : ?>
+<a href="<?php echo esc_url(wp_get_attachment_url(get_post_thumbnail_id($post_id))); ?>" class="featured-image">
+    <?php echo get_the_post_thumbnail($post_id, 'full'); ?>
+</a>
+<?php endif; ?>
+<a href="#message-us" class="btn btn-dark mt-3" data-title="<?php echo esc_attr($post->post_title); ?>">Go to Message
+    Us</a>
+<?php
+  $content = ob_get_clean();
+
+  wp_send_json_success(['gallery' => $gallery_content, 'content' => $content]);
+}
+add_action('wp_ajax_load_modulebox', 'load_modulebox_content');
+add_action('wp_ajax_nopriv_load_modulebox', 'load_modulebox_content');
+?>
+
+#####front-page.php:
+<?php
+get_header(); ?>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Gallery Section (Left) -->
+        <div class="col-7 d-flex justify-content-center align-items-center vh-100">
+            <div id="modulesCarousel" class="carousel slide h-100 w-100" data-bs-ride="carousel">
+                <div class="carousel-inner h-100">
+                    <?php
+                    $gallery = get_post_meta(get_the_ID(), '_modulebox_gallery', true);
+                    $gallery = maybe_unserialize($gallery); // Ensure correct format
+
+                    if (!empty($gallery) && is_array($gallery)) :
+                        $first = true;
+                        foreach ($gallery as $image_id) : ?>
+                    <div class="carousel-item <?php echo $first ? 'active' : ''; ?> h-100">
+                        <img src="<?php echo esc_url(wp_get_attachment_url($image_id)); ?>" alt="Featured Image"
+                            class="d-block w-100 h-100 object-fit-cover featured-image">
+                    </div>
+                    <?php $first = false;
+                        endforeach;
+                    else : ?>
+                    <p class="text-center">⚠ No gallery images available.</p>
+                    <?php endif; ?>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#modulesCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#modulesCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Module List & Details -->
+        <div class="col-5 d-flex flex-column justify-content-start">
+            <div id="modulebox_list">
+                <?php
+                $modules = new WP_Query(['post_type' => 'modulebox', 'posts_per_page' => -1]);
+                if ($modules->have_posts()) :
+                    while ($modules->have_posts()) : $modules->the_post(); ?>
+                <a href="#" data-id="<?php the_ID(); ?>"><?php the_title(); ?></a>
+                <?php endwhile;
+                    wp_reset_postdata();
+                endif;
+                ?>
+            </div>
+
+            <div class="module-details"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox">
+    <span class="close">&times;</span>
+    <img class="lightbox-content" id="lightbox-img">
+</div>
+
+<script>
+jQuery(document).ready(function($) {
+    function attachEventHandlers() {
+        // Handle 'Go to Message Us' button click
+        $(".go-to-message-us").off("click").on("click", function() {
+            var postTitle = $(this).data("title");
+            $("#post-title").val(postTitle);
+            $("#your-subject").val(postTitle);
+        });
+
+        // Handle image click to open lightbox
+        $(".featured-image").on("click", function() {
+            var src = $(this).attr("src");
+            $("#lightbox-img").attr("src", src);
+            $("#lightbox").css("display", "block");
+        });
+
+        // Handle lightbox close
+        $(".close, #lightbox").on("click", function() {
+            $("#lightbox").css("display", "none");
+        });
+
+        // Prevent lightbox close when clicking on image
+        $("#lightbox-img").on("click", function(event) {
+            event.stopPropagation();
+        });
+    }
+
+    // Attach initial event handlers
+    attachEventHandlers();
+
+    // Handle module link click
+    $("#modulebox_list a").click(function(e) {
+        e.preventDefault();
+        var postID = $(this).data("id");
+
+        $.ajax({
+            url: ajax_object.ajaxurl,
+            type: "POST",
+            data: {
+                action: "load_modulebox",
+                module_id: postID,
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update the gallery (left col-7)
+                    $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+                    // Update the content (right col-5)
+                    $(".module-details").html(response.data.content);
+
+                    // Reinitialize the carousel
+                    $("#modulesCarousel").carousel();
+
+                    // Reinitialize Lightbox
+                    attachEventHandlers();
+                } else {
+                    alert("Failed to load content.");
+                }
+            },
+        });
+    });
+});
+</script>
+
+<div class="container text-center py-4">
+    <h2 class="display-5">Message Us</h2>
+    <div class="d-flex justify-content-center">
+        <div id="message-us">
+            <?php echo do_shortcode('[contact-form-7 id="235e694" title="message-us"]'); ?>
+        </div>
+    </div>
+</div>
+
+<?php
+get_footer();
+?>
+
+#####/assets/js/custom.js:
+document.addEventListener("DOMContentLoaded", function () {
+  var lightbox = document.getElementById("lightbox");
+  var lightboxImg = document.getElementById("lightbox-img");
+  var close = document.getElementsByClassName("close")[0];
+
+  document.querySelectorAll(".featured-image").forEach(function (image) {
+    image.addEventListener("click", function () {
+      lightbox.style.display = "block";
+      lightboxImg.src = this.src;
+    });
+  });
+
+  close.addEventListener("click", function () {
+    lightbox.style.display = "none";
+  });
+
+  lightbox.addEventListener("click", function (event) {
+    if (event.target == lightbox) {
+      lightbox.style.display = "none";
+    }
+  });
+
+  lightboxImg.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+});
+
+
+
+#####/assets/js/modulebox-ajax.js:
+jQuery(document).ready(function ($) {
+  function attachEventHandlers() {
+    // Handle 'Go to Message Us' button click
+    $(".go-to-message-us")
+      .off("click")
+      .on("click", function () {
+        var postTitle = $(this).data("title");
+        $("#post-title").val(postTitle);
+        $("#your-subject").val(postTitle);
+      });
+  }
+
+  // Attach initial event handlers
+  attachEventHandlers();
+
+  // Handle module link click
+  $("#modulebox_list a").click(function (e) {
+    e.preventDefault();
+    var postID = $(this).data("id");
+
+    $.ajax({
+      url: ajax_object.ajaxurl,
+      type: "POST",
+      data: {
+        action: "load_modulebox",
+        module_id: postID,
+      },
+      success: function (response) {
+        if (response.success) {
+          // Update the gallery (left col-7)
+          $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+          // Update the content (right col-5)
+          $(".module-details").html(response.data.content);
+
+          // Reinitialize the carousel
+          $("#modulesCarousel").carousel();
+
+          // Reinitialize Lightbox
+          lightbox.init();
+
+          // Reattach event handlers for the new content
+          attachEventHandlers();
+        } else {
+          alert("Failed to load content.");
+        }
+      },
+    });
+  });
+});
+
+
+#####/assets/css/style.scss:
+.carousel-item {
+  height: 100%;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+.module-details {
+  img {
+    width: 248px;
+  }
+}
+
+//DIALOG -2.CSS: Styles the lightbox modal and its content. The .lightbox class initially hides the modal, and the .lightbox-content class styles the image inside the modal.
+
+.carousel-item {
+  height: 100%;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.lightbox {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  padding-top: 60px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.lightbox-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+
+OKAY, thank you for reading this far. I hope you can analyze now and help to work further on. 
+
+Please can you just take a look if everything work as expected?:
+
+With expeceted I mean this:
+1.) the bootstrap carousel is added correctly.
+2.) gallery is not opening image in dialog box. Only feature image does.
+3.) Functionality is properly added in all levels.
+4.) after double checking, there is no extra issues and You can place your final answer, please.
+thanks!
 
