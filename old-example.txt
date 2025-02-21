@@ -1,0 +1,779 @@
+OKAY, here gona be two versions. One vill be OLD version that actually works without errors and the new variant(You should re-write a new version, please), that is givim me a lot of errors in admin view under Modules CPT.
+
+@@@@@@@@VERSION-1@@@@@@@@
+OLD VERSION OF one WORDPRESS SITE WHERE WAS NO ERRORS:
+
+########## /assets/js/CUSTOM.JS FILE CODE:
+########## assets/js/MODULE-GALLERY.PHP FILE CODE:
+########## FRONT-PAGE.PHP FILE CODE:
+########## FUNCTIONS.PHP FILE CODE:
+
+HERE IS THE ALL FILES WITH it's CODE DOWN BELOW, each file is starting with "##########"
+PLEASE - check for why here is no errors in the dashboard panel view > console. NO errors here.
+
+########## /assets/js/CUSTOM.JS FILE CODE:
+// /// ADD SLIDER js
+// document.addEventListener("DOMContentLoaded", function () {
+// var swiper = new Swiper(".swiper-container", {
+// slidesPerView: 1,
+// spaceBetween: 10,
+// pagination: {
+// el: ".swiper-pagination",
+// clickable: true,
+// },
+// navigation: {
+// nextEl: ".swiper-button-next",
+// prevEl: ".swiper-button-prev",
+// },
+// });
+// });
+
+/// ADD metabox gallery 2 MODULES
+jQuery(document).ready(function ($) {
+  var frame;
+  $("#modules-gallery-upload").on("click", function (event) {
+    event.preventDefault();
+    if (frame) {
+      frame.open();
+      return;
+    }
+    frame = wp.media({
+      title: "Select or Upload Images",
+      button: {
+        text: "Use these images",
+      },
+      multiple: true,
+    });
+    frame.on("select", function () {
+      var attachments = frame.state().get("selection").toJSON();
+      $.each(attachments, function (index, attachment) {
+        $("#modules-gallery-list").append(
+          '<li><input type="hidden" name="modules_gallery[]" value="' +
+            attachment.id +
+            '">' +
+            '<img src="' +
+            attachment.sizes.thumbnail.url +
+            '">' +
+            '<a href="#" class="remove-image">Remove</a></li>'
+        );
+      });
+    });
+    frame.open();
+  });
+  $("#modules-gallery-list").on("click", ".remove-image", function (event) {
+    event.preventDefault();
+    $(this).closest("li").remove();
+  });
+});
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+///
+jQuery(document).ready(function ($) {
+function attachEventHandlers() {
+// Handle 'Go to Message Us' button click
+$(".go-to-message-us")
+.off("click")
+.on("click", function () {
+var postTitle = $(this).data("title");
+$("#post-title").val(postTitle);
+$("#your-subject").val(postTitle);
+});
+}
+
+// Attach initial event handlers
+attachEventHandlers();
+
+// Handle module link click
+$("#modules\_\_url a").click(function (e) {
+e.preventDefault();
+var postID = $(this).data("id");
+
+    $.ajax({
+      url: ajax_object.ajax_url,
+      type: "POST",
+      data: {
+        action: "load_module_content",
+        nonce: ajax_object.nonce,
+        post_id: postID,
+      },
+      success: function (response) {
+        if (response.success) {
+          // Update the gallery (left col-6)
+          $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+          // Update the content (right col-6)
+          $(".module-details").html(response.data.content);
+
+          // Reinitialize the carousel
+          $("#modulesCarousel").carousel();
+
+          // Reinitialize Lightbox
+          lightbox.init();
+
+          // Reattach event handlers for the new content
+          attachEventHandlers();
+        } else {
+          alert("Failed to load content.");
+        }
+      },
+    });
+
+});
+});
+
+########## assets/js/MODULE-GALLERY.JS FILE CODE:
+/// ADD metabox gallery 2 MODULES
+jQuery(document).ready(function ($) {
+var frame;
+$("#modules-gallery-upload").on("click", function (event) {
+event.preventDefault();
+if (frame) {
+frame.open();
+return;
+}
+frame = wp.media({
+title: "Select or Upload Images",
+button: {
+text: "Use these images",
+},
+multiple: true,
+});
+frame.on("select", function () {
+var attachments = frame.state().get("selection").toJSON();
+$.each(attachments, function (index, attachment) {
+$("#modules-gallery-list").append(
+'<li><input type="hidden" name="modules_gallery[]" value="' +
+            attachment.id +
+            '">' +
+'<img src="' +
+            attachment.sizes.thumbnail.url +
+            '">' +
+'<a href="#" class="remove-image">Remove</a></li>'
+);
+});
+});
+frame.open();
+});
+$("#modules-gallery-list").on("click", ".remove-image", function (event) {
+event.preventDefault();
+$(this).closest("li").remove();
+});
+});
+
+########## FRONT-PAGE.PHP FILE CODE:
+
+<?php
+
+/**
+ * The Front page of the site
+ *
+ * @package test
+ */
+
+get_header();
+?>
+
+<!-- <div id="primary" class="content-area">
+    <main id="main" class="site-main"> -->
+<!-- Slider Section -->
+<div class="container-fluid p-0">
+    <div class="row no-gutters">
+        <div class="col-12">
+            <!-- Bootstrap Carousel -->
+            <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <?php
+                    $args = array(
+                        'post_type' => 'slider',
+                        'tax_query' => array(
+                            array(
+                                'taxonomy' => 'slider_category',
+                                'field'    => 'slug',
+                                'terms'    => array('pirmais', 'otrais'),
+                            ),
+                        ),
+                    );
+                    $slider_query = new WP_Query($args);
+                    $active_class = 'active';
+                    if ($slider_query->have_posts()) :
+                        while ($slider_query->have_posts()) : $slider_query->the_post();
+                    ?>
+                    <div class="carousel-item <?php echo $active_class; ?>">
+                        <?php if (has_post_thumbnail()) : ?>
+                        <div class="slider-image">
+                            <a href="<?php echo wp_get_attachment_url(get_post_thumbnail_id()); ?>"
+                                data-lightbox="main-carousel">
+                                <?php the_post_thumbnail('full'); ?>
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                        <div class="slider-content">
+                            <h1><?php the_title(); ?></h1>
+                            <p><?php the_content(); ?></p>
+                        </div>
+                    </div>
+                    <?php
+                            $active_class = ''; // Remove active class after the first item
+                        endwhile;
+                        wp_reset_postdata();
+                    else :
+                        echo '<p>No sliders found.</p>';
+                    endif;
+                    ?>
+                </div>
+                <!-- Add Navigation -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 mb-4">
+    <div class="content">
+
+        <h1 class="display-3">Modules</h1>
+
+        <div class="modules-text">
+            <p>RÜJAS eco-friendly Timber Modular Houses offer sustainable living with panoramic views &amp; <span
+                    style="white-space:nowrap">on-demand</span> privacy.</p>
+            <p>Our Timber Modular Houses are built with environmentally friendly materials, which contributes to an
+                ecologically sustainable living environment and offers you breathtaking panoramic views while ensuring
+                utmost privacy</p>
+        </div>
+
+    </div><!-- content -->
+
+</div>
+<!-- Modules Section -->
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <div class="col-6 d-flex flex-column justify-content-center h-100">
+            <!-- Module Gallery -->
+            <div id="modulesCarousel" class="carousel slide flex-grow-1" data-bs-ride="carousel">
+                <div class="carousel-inner h-100">
+                    <?php
+                    $modules_args = array(
+                        'post_type' => 'modules',
+                        'posts_per_page' => 1,
+                    );
+                    $modules_query = new WP_Query($modules_args);
+                    if ($modules_query->have_posts()) :
+                        while ($modules_query->have_posts()) : $modules_query->the_post();
+                            // Fetch the gallery images
+                            $gallery = get_post_meta(get_the_ID(), '_modules_gallery', true);
+                            if ($gallery) :
+                                $module_active_class = 'active';
+                                foreach ($gallery as $image_id) :
+                    ?>
+                    <div class="carousel-item <?php echo $module_active_class; ?>">
+                        <a href="<?php echo wp_get_attachment_url($image_id); ?>" data-lightbox="modules-carousel">
+                            <?php echo wp_get_attachment_image($image_id, 'full'); ?>
+                        </a>
+                    </div>
+                    <?php
+                                    $module_active_class = ''; // Remove active class after the first item
+                                endforeach;
+                            endif;
+                        endwhile;
+                        wp_reset_postdata();
+                    else :
+                        echo '<p>No modules found.</p>';
+                    endif;
+                    ?>
+                </div>
+                <!-- Add Navigation -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#modulesCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#modulesCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+        <div class="col-6 d-flex flex-column justify-content-center h-100">
+            <!-- Persistent Module Titles -->
+            <div id="modules__url" class="d-flex flex-column flex-grow-0">
+                <?php
+                $modules_titles_args = array(
+                    'post_type' => 'modules',
+                    'posts_per_page' => -1,
+                );
+                $modules_titles_query = new WP_Query($modules_titles_args);
+                if ($modules_titles_query->have_posts()) :
+                    while ($modules_titles_query->have_posts()) : $modules_titles_query->the_post();
+                ?>
+                <a href="#" data-id="<?php echo get_the_ID(); ?>"><?php the_title(); ?></a>
+                <?php
+                    endwhile;
+                    wp_reset_postdata();
+                else :
+                    echo '<p>No modules found.</p>';
+                endif;
+                ?>
+            </div>
+            <!-- Module details -->
+            <div class="module-details flex-grow-1">
+                <?php
+                if ($modules_query->have_posts()) :
+                    while ($modules_query->have_posts()) : $modules_query->the_post();
+                ?>
+                <h2><?php the_title(); ?></h2>
+                <?php the_content(); ?>
+                <?php if (has_post_thumbnail()) : ?>
+                <div class="module-featured-image">
+                    <a href="<?php echo wp_get_attachment_url(get_post_thumbnail_id()); ?>"
+                        data-lightbox="featured-image">
+                        <?php the_post_thumbnail('full'); ?>
+                    </a>
+                </div>
+                <?php endif; ?>
+                <a href="#message-us" class="btn btn-dark go-to-message-us mt-3"
+                    data-title="<?php echo esc_attr(get_the_title()); ?>">Go to Message Us</a>
+                <?php
+                    endwhile;
+                    wp_reset_postdata();
+                endif;
+                ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Animals Section -->
+<div class="container">
+    <h2 class="text-center">Animals</h2>
+    <p class="text-center">Lead text under the title.</p>
+    <div class="row">
+        <div class="col-4">
+            <img src="image1.jpg" alt="Animal Image">
+            <h3>Text 1</h3>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div class="col-4">
+            <img src="image2.jpg" alt="Animal Image">
+            <h3>Text 2</h3>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div class="col-4">
+            <img src="image3.jpg" alt="Animal Image">
+            <h3>Text 3</h3>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Form Section -->
+<div class="container">
+    <div class="row">
+
+        <div class="col-12">
+            <h2 class="text-center py-4 display-5">Message Us</h2>
+        </div>
+
+        <div class="col-12 col-sm-1 col-md-2 col-lg-3"></div>
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+            <div id="message-us">
+                <?php echo do_shortcode('[contact-form-7 id="235e694" title="message-us"]'); ?>
+            </div>
+        </div>
+        <div class="col-12 col-sm-1 col-md-2 col-lg-3"></div>
+
+    </div>
+
+</div>
+
+<?php
+get_footer();
+?>
+
+########## FUNCTIONS.PHP FILE CODE:
+
+<?php
+
+/**
+ * @package Bootscore Child
+ *
+ * @version 6.0.0
+ */
+
+
+// Exit if accessed directly
+defined('ABSPATH') || exit;
+
+
+/**
+ * Enqueue scripts and styles
+ */
+add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
+function bootscore_child_enqueue_styles()
+{
+
+  // Compiled main.css
+  $modified_bootscoreChildCss = date('YmdHi', filemtime(get_stylesheet_directory() . '/assets/css/main.css'));
+  wp_enqueue_style('main', get_stylesheet_directory_uri() . '/assets/css/main.css', array('parent-style'), $modified_bootscoreChildCss);
+
+  // style.css
+  wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
+
+  // custom.js
+  // Get modification time. Enqueue file with modification date to prevent browser from loading cached scripts when file content changes. 
+  $modificated_CustomJS = date('YmdHi', filemtime(get_stylesheet_directory() . '/assets/js/custom.js'));
+  wp_enqueue_script('custom-js', get_stylesheet_directory_uri() . '/assets/js/custom.js', array('jquery'), $modificated_CustomJS, false, true);
+}
+
+
+
+
+//
+// // Disable Gutenberg editor globally
+// add_filter('use_block_editor_for_post', '__return_false');
+
+// // Enqueue the Classic Editor styles to ensure compatibility
+// add_action('admin_enqueue_scripts', function () {
+//   wp_enqueue_style('classic-editor', includes_url('css/classic-themes.css'));
+// });
+
+//
+//
+/**
+ * Enqueue admin scripts.
+ */
+function enqueue_admin_scripts()
+{
+  global $typenow;
+  if ($typenow == 'modules') {
+    wp_enqueue_media();
+    wp_enqueue_script('jquery');
+    wp_enqueue_script('modules-gallery', get_stylesheet_directory_uri() . '/assets/js/modules-gallery.js', array('jquery'), null, true);
+  }
+}
+add_action('admin_enqueue_scripts', 'enqueue_admin_scripts');
+
+
+//
+//
+//
+/**
+ * Register a Custom Post Type called "slider".
+ */
+function register_slider_cpt()
+{
+  $args = array(
+    'public'       => true,
+    'label'        => 'Sliders',
+    'supports'     => array('title', 'editor', 'thumbnail'),
+    'show_in_rest' => true,
+  );
+
+  register_post_type('slider', $args);
+}
+
+// Hook into the 'init' action
+add_action('init', 'register_slider_cpt');
+
+/**
+ * Register a custom taxonomy for the "slider" post type.
+ */
+function register_slider_taxonomy()
+{
+  $args = array(
+    'hierarchical' => true,
+    'label'        => 'Slider Categories',
+    'rewrite'      => array('slug' => 'slider-category'),
+    'show_in_rest' => true,
+  );
+
+  register_taxonomy('slider_category', 'slider', $args);
+}
+
+// Hook into the 'init' action
+add_action('init', 'register_slider_taxonomy');
+
+//
+//
+//
+
+
+//
+//
+//
+/**
+ * Register a Custom Post Type called "modules".
+ */
+function register_modules_cpt()
+{
+  $args = array(
+    'public'       => true,
+    'label'        => 'Modules',
+    'supports'     => array('title', 'editor', 'thumbnail'),
+    'show_in_rest' => true,
+  );
+
+  register_post_type('modules', $args);
+}
+
+// Hook into the 'init' action
+add_action('init', 'register_modules_cpt');
+
+/**
+ * Register a custom taxonomy for the "modules" post type.
+ */
+function register_modules_taxonomy()
+{
+  $args = array(
+    'hierarchical' => true,
+    'label'        => 'Modules Categories',
+    'rewrite'      => array('slug' => 'modules-category'),
+    'show_in_rest' => true,
+  );
+
+  register_taxonomy('modules_category', 'modules', $args);
+}
+
+// Hook into the 'init' action
+add_action('init', 'register_modules_taxonomy');
+
+/**
+ * Add meta box for gallery images.
+ */
+function add_modules_meta_boxes()
+{
+  add_meta_box(
+    'modules_gallery',
+    'Gallery Images',
+    'render_modules_gallery_meta_box',
+    'modules',
+    'normal',
+    'high'
+  );
+}
+add_action('add_meta_boxes', 'add_modules_meta_boxes');
+
+/**
+ * Render the gallery meta box.
+ */
+function render_modules_gallery_meta_box($post)
+{
+  wp_nonce_field('save_modules_gallery', 'modules_gallery_nonce');
+  $gallery = get_post_meta($post->ID, '_modules_gallery', true);
+?>
+<div id="modules-gallery-wrapper">
+    <input type="button" class="button" id="modules-gallery-upload" value="Add Images" />
+    <ul id="modules-gallery-list">
+        <?php if ($gallery) : ?>
+        <?php foreach ($gallery as $image_id) : ?>
+        <li>
+            <input type="hidden" name="modules_gallery[]" value="<?php echo esc_attr($image_id); ?>">
+            <?php echo wp_get_attachment_image($image_id, 'thumbnail'); ?>
+            <a href="#" class="remove-image">Remove</a>
+        </li>
+        <?php endforeach; ?>
+        <?php endif; ?>
+    </ul>
+</div>
+<style>
+#modules-gallery-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#modules-gallery-list li {
+margin: 10px;
+position: relative;
+}
+
+#modules-gallery-list li img {
+display: block;
+}
+
+#modules-gallery-list li .remove-image {
+position: absolute;
+top: 5px;
+right: 5px;
+background: rgba(0, 0, 0, 0.5);
+color: #fff;
+padding: 2px 5px;
+text-decoration: none;
+font-size: 12px;
+}
+</style>
+
+<?php
+}
+
+/**
+ * Save the gallery images.
+ */
+function save_modules_gallery($post_id)
+{
+  if (!isset($_POST['modules_gallery_nonce']) || !wp_verify_nonce($_POST['modules_gallery_nonce'], 'save_modules_gallery')) {
+    return;
+  }
+  if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+    return;
+  }
+  if (!current_user_can('edit_post', $post_id)) {
+    return;
+  }
+  if (isset($_POST['modules_gallery'])) {
+    $gallery = array_map('intval', $_POST['modules_gallery']);
+    update_post_meta($post_id, '_modules_gallery', $gallery);
+  } else {
+    delete_post_meta($post_id, '_modules_gallery');
+  }
+}
+add_action('save_post', 'save_modules_gallery');
+//
+//
+//
+//
+//
+//
+//
+
+//
+//
+// /**
+//  * Enqueue Swiper JS.
+//  */
+// function enqueue_swiper_js()
+// {
+//   // Enqueue Swiper JS
+//   wp_enqueue_script(
+//     'swiper-js',
+//     'https://unpkg.com/swiper/swiper-bundle.min.js',
+//     array(),
+//     null,
+//     true
+//   );
+
+//   // Enqueue Swiper CSS
+//   wp_enqueue_style(
+//     'swiper-css',
+//     'https://unpkg.com/swiper/swiper-bundle.min.css',
+//     array(),
+//     null
+//   );
+// }
+
+// // Hook into the 'wp_enqueue_scripts' action
+// add_action('wp_enqueue_scripts', 'enqueue_swiper_js');
+
+
+
+
+
+//
+//
+//
+//
+//
+//
+/**
+ * Enqueue Lightbox2 CSS and JS.
+ */
+function enqueue_lightbox2()
+{
+  wp_enqueue_style('lightbox2-css', 'https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css');
+  wp_enqueue_script('lightbox2-js', 'https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js', array('jquery'), null, true);
+}
+add_action('wp_enqueue_scripts', 'enqueue_lightbox2');
+
+
+
+
+//
+function localize_custom_script()
+{
+  // Localize script to pass the AJAX URL and nonce
+  wp_localize_script('custom-js', 'ajax_object', array(
+    'ajax_url' => admin_url('admin-ajax.php'),
+    'nonce'    => wp_create_nonce('load_module_content_nonce')
+  ));
+}
+add_action('wp_enqueue_scripts', 'localize_custom_script');
+
+//
+//
+function load_module_content()
+{
+  check_ajax_referer('load_module_content_nonce', 'nonce');
+
+  if (!isset($_POST['post_id'])) {
+    wp_send_json_error('Invalid post ID.');
+  }
+
+  $post_id = intval($_POST['post_id']);
+  $post = get_post($post_id);
+
+  if (!$post) {
+    wp_send_json_error('Post not found.');
+  }
+
+  // Fetch the gallery images
+  $gallery = get_post_meta($post_id, '_modules_gallery', true);
+  ob_start();
+  if ($gallery) {
+    $module_active_class = 'active';
+    foreach ($gallery as $image_id) {
+  ?>
+<div class="carousel-item <?php echo $module_active_class; ?>">
+    <a href="<?php echo wp_get_attachment_url($image_id); ?>" data-lightbox="modules-carousel">
+        <?php echo wp_get_attachment_image($image_id, 'full'); ?>
+    </a>
+</div>
+<?php
+      $module_active_class = ''; // Remove active class after the first item
+    }
+  }
+  $gallery_content = ob_get_clean();
+
+ob_start();
+?>
+
+<h2><?php echo esc_html($post->post_title); ?></h2>
+<div><?php echo apply_filters('the_content', $post->post_content); ?></div>
+<?php if (has_post_thumbnail($post_id)) : ?>
+<div class="module-featured-image">
+    <a href="<?php echo esc_url(wp_get_attachment_url(get_post_thumbnail_id($post_id))); ?>"
+        data-lightbox="featured-image">
+        <?php echo get_the_post_thumbnail($post_id, 'full'); ?>
+    </a>
+</div>
+<?php endif; ?>
+<a href="#message-us" class="btn btn-dark go-to-message-us mt-3"
+    data-title="<?php echo esc_attr($post->post_title); ?>">Go
+    to Message Us</a>
+<?php
+  $content = ob_get_clean();
+
+wp_send_json_success(array('gallery' => $gallery_content, 'content' => $content));
+}
+add_action('wp_ajax_load_module_content', 'load_module_content');
+add_action('wp_ajax_nopriv_load_module_content', 'load_module_content');
+
+
+Thank You!
