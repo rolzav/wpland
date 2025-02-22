@@ -1,4 +1,4 @@
-INVOLVED FILES TO MAINTAIN FUNCTIONALITY:
+INVOLVED FILES:
 1. front-page.php
 2. functions.php
 3. includes/enqueue-scripts.php
@@ -200,7 +200,7 @@ jQuery(document).ready(function($) {
 get_footer();
 ?>
    
-3. functions.php
+2. functions.php
 <?php
 
 /**
@@ -220,7 +220,7 @@ foreach (glob(get_stylesheet_directory() . '/includes/modules/*.php') as $file) 
   require_once $file;
 }
 
-4. includes/enqueue-scripts.php
+3. includes/enqueue-scripts.php
 <?php
 
 add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
@@ -414,7 +414,7 @@ function save_modulebox_gallery($post_id)
     update_post_meta($post_id, '_modulebox_gallery', isset($_POST['modulebox_gallery']) ? array_map('intval', $_POST['modulebox_gallery']) : []);
 }
 
-8. assets/js/custom.js
+7. assets/js/custom.js
 document.addEventListener("DOMContentLoaded", function () {
   jQuery(document).ready(function ($) {
     function attachEventHandlers() {
