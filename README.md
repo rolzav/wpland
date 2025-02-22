@@ -1,18 +1,14 @@
-Current setup:
-
-<<<FILE-#1>>> front-page.php:
-<<<FILE-#2>>> functions.php.php:
-<<<FILE-#3>>> includes/enqueue-scripts.php:
-<<<FILE-#4>>> includes/modules/ajax-handlers.php:
-<<<FILE-#5>>> includes/modules/custom-post-types.php:
-<<<FILE-#6>>> includes/modules/meta-boxes.php:
-<<<FILE-#7>>> assets/js/custom.js:
-<<<FILE-#8>>> assets/scss/aaa_bootscore-custom.scss:
-
-
-Here they are one by one:
-
-<<<FILE-#1>>> front-page.php:
+File List:
+front-page.php
+functions.php
+includes/enqueue-scripts.php
+includes/modules/ajax-handlers.php
+includes/modules/custom-post-types.php
+includes/modules/meta-boxes.php
+assets/js/custom.js
+assets/scss/aaa_bootscore-custom.scss
+File Contents:
+1. front-page.php:
 <?php
 get_header(); ?>
 
@@ -82,9 +78,7 @@ get_header(); ?>
 get_footer();
 ?>
 
-
-
-<<<FILE-#2>>> functions.php.php:
+2. functions.php:
 <?php
 
 /**
@@ -104,9 +98,7 @@ foreach (glob(get_stylesheet_directory() . '/includes/modules/*.php') as $file) 
   require_once $file;
 }
 
-
-
-<<<FILE-#3>>> includes/enqueue-scripts.php:
+3. includes/enqueue-scripts.php:
 <?php
 
 add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
@@ -135,9 +127,7 @@ function enqueue_ajax_script()
     wp_localize_script('modulebox-ajax', 'ajax_object', ['ajaxurl' => admin_url('admin-ajax.php')]);
 }
 
-
-
-<<<FILE-#4>>> includes/modules/ajax-handlers.php:
+4. includes/modules/ajax-handlers.php:
 <?php
 
 // AJAX Handler for Content Update
@@ -191,9 +181,7 @@ function load_modulebox_content()
     wp_send_json_success(['gallery' => $gallery_content, 'content' => $content]);
 }
 
-
-
-<<<FILE-#5>>> includes/modules/custom-post-types.php:
+5. includes/modules/custom-post-types.php:
 <?php
 
 // Register MODULEBOX Custom Post Type
@@ -211,9 +199,7 @@ function register_modulebox_cpt()
   ]);
 }
 
-
-
-<<<FILE-#6>>> includes/modules/meta-boxes.php:
+6. includes/modules/meta-boxes.php:
 <?php
 
 // Add Gallery Functionality in the Editor
@@ -306,9 +292,7 @@ function save_modulebox_gallery($post_id)
     update_post_meta($post_id, '_modulebox_gallery', isset($_POST['modulebox_gallery']) ? array_map('intval', $_POST['modulebox_gallery']) : []);
 }
 
-
-
-<<<FILE-#7>>> assets/js/custom.js:
+7. assets/js/custom.js:
 document.addEventListener("DOMContentLoaded", function () {
     jQuery(document).ready(function ($) {
       function attachEventHandlers() {
@@ -359,10 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
   
-
-
-
-<<<FILE-#8>>> assets/scss/aaa_bootscore-custom.scss:
+8. assets/scss/aaa_bootscore-custom.scss:
 .carousel-item {
     height: 100%;
   }
@@ -441,4 +422,6 @@ document.addEventListener("DOMContentLoaded", function () {
     cursor: pointer;
   }
 
-  // # Thank You very much.
+Each file's content is presented within code blocks, making it easy to read and understand.
+
+
