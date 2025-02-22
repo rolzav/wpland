@@ -1,26 +1,3 @@
-Okay I added everything.
-
-Currently , we have the following code for having custom post type, add bootstrap carousel as a gallery, and split the content into two peaces col-7 and col-5 (for now...)
-
-so basically idea is to have working WordPress custom team with custom added functionality and this custom functionality is the following idea for for okay so the main idea was to have custom post type correctly implemented and from built-in tools that WordPress has already put in the initialized also the image gallery that should be displayed into the front end render it output and split into two parts 
-
-the code you gave me lastly works good but I would like to ask you to refactor the code because it is possible to create it a more simple way I would say could be also the professional more professional way maybe we could sell like that and yeah so idea is to have a properly working on the core built in tools and functions and functionality and features based gallery functionality that properly works and displays in the front end for now it all looks pretty much good only the one issue is that we don't have proper ensemblance images displayed into the front end please check and analyze where and what issues or potential inconsistencies could be an please do everything you think it's necessary to fulfill the goal of custom functionality for having a proper installed gallery and proper Smart Way used links and proper image fetching.
-
-
-The concept is Your last two answers combined. That is my current setup, I tell this so it would save tokens, and hopefuly I could not to copy and paste everything here in chat, correct?
-
-okay first of all before we go, what could you suggest?
-
-You have any questions?
-
-Could you assist and guide me through to get best simplicity possible out of it? Maybe If You`de like, Lets completely change the CPT name? 
-
-Let call it DEMOBOX
-
-SO:
-YOUR TASK: (that I would love to ask You to assist me with!) would be to rewrite now - more concise variant of whole 8 files.
-
-Oh Okay here they are actually:
 INVOLVED FILES TO MAINTAIN FUNCTIONALITY:
 1. front-page.php
 2. functions.php
