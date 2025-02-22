@@ -1,22 +1,46 @@
-File List:
-front-page.php
-functions.php
-includes/enqueue-scripts.php
-includes/modules/ajax-handlers.php
-includes/modules/custom-post-types.php
-includes/modules/meta-boxes.php
-assets/js/custom.js
-assets/scss/aaa_bootscore-custom.scss
-File Contents:
-1. front-page.php:
+Okay I added everything.
+
+Currently , we have the following code for having custom post type, add bootstrap carousel as a gallery, and split the content into two peaces col-7 and col-5 (for now...)
+
+so basically idea is to have working WordPress custom team with custom added functionality and this custom functionality is the following idea for for okay so the main idea was to have custom post type correctly implemented and from built-in tools that WordPress has already put in the initialized also the image gallery that should be displayed into the front end render it output and split into two parts 
+
+the code you gave me lastly works good but I would like to ask you to refactor the code because it is possible to create it a more simple way I would say could be also the professional more professional way maybe we could sell like that and yeah so idea is to have a properly working on the core built in tools and functions and functionality and features based gallery functionality that properly works and displays in the front end for now it all looks pretty much good only the one issue is that we don't have proper ensemblance images displayed into the front end please check and analyze where and what issues or potential inconsistencies could be an please do everything you think it's necessary to fulfill the goal of custom functionality for having a proper installed gallery and proper Smart Way used links and proper image fetching.
+
+
+The concept is Your last two answers combined. That is my current setup, I tell this so it would save tokens, and hopefuly I could not to copy and paste everything here in chat, correct?
+
+okay first of all before we go, what could you suggest?
+
+You have any questions?
+
+Could you assist and guide me through to get best simplicity possible out of it? Maybe If You`de like, Lets completely change the CPT name? 
+
+Let call it DEMOBOX
+
+SO:
+YOUR TASK: (that I would love to ask You to assist me with!) would be to rewrite now - more concise variant of whole 8 files.
+
+Oh Okay here they are actually:
+INVOLVED FILES TO MAINTAIN FUNCTIONALITY:
+1. front-page.php
+2. functions.php
+3. includes/enqueue-scripts.php
+4. includes/modules/ajax-handlers.php
+5. includes/modules/custom-post-types.php
+6. includes/modules/meta-boxes.php
+7. assets/js/custom.js
+
+CONTENTs OF ALL FILES:
+
+1. front-page.php
 <?php
 get_header(); ?>
 
 <div class="container-fluid h-100">
     <div class="row h-100">
         <!-- Gallery Section (Left) -->
-        <div class="col-8 d-flex justify-content-center align-items-center vh-100">
-            <div id="modulesCarousel" class="carousel slide h-100 w-100" data-bs-ride="carousel">
+        <div id="carousel-container" class="col-7 d-flex justify-content-center align-items-center vh-100 d-none">
+            <div id="modulesCarousel" class="carousel slide h-100 w-100 pointer-event" data-bs-ride="carousel">
                 <div class="carousel-inner h-100">
                     <?php
                     $gallery = get_post_meta(get_the_ID(), '_modulebox_gallery', true);
@@ -47,13 +71,15 @@ get_header(); ?>
         </div>
 
         <!-- Module List & Details -->
-        <div class="col-4 d-flex flex-column justify-content-start">
+        <div id="modules-list-container" class="col-12 d-flex flex-column justify-content-start">
             <div id="modulebox_list">
+                <a href="#" id="ensembles-link">ENSEMBLES</a>
                 <?php
                 $modules = new WP_Query(['post_type' => 'modulebox', 'posts_per_page' => -1]);
                 if ($modules->have_posts()) :
-                    while ($modules->have_posts()) : $modules->the_post(); ?>
-                <a href="#" data-id="<?php the_ID(); ?>"><?php the_title(); ?></a>
+                    while ($modules->have_posts()) : $modules->the_post(); 
+                        $ensembles_image = get_post_meta(get_the_ID(), '_ensembles_image', true); ?>
+                <a href="#" data-id="<?php the_ID(); ?>" data-ensembles-image="<?php echo esc_url($ensembles_image); ?>"><?php the_title(); ?></a>
                 <?php endwhile;
                     wp_reset_postdata();
                 endif;
@@ -74,11 +100,130 @@ get_header(); ?>
     </div>
 </div>
 
+<script>
+jQuery(document).ready(function($) {
+    function attachEventHandlers() {
+        // Handle 'Go to Message Us' button click
+        $(".go-to-message-us").off("click").on("click", function() {
+            var postTitle = $(this).data("title");
+            $("#post-title").val(postTitle);
+            $("#your-subject").val(postTitle);
+        });
+
+        // Handle "ENSEMBLES" link click
+        $("#ensembles-link").on("click", function(e) {
+            e.preventDefault();
+            showEnsemblesContent();
+        });
+
+        // Handle module link click
+        $("#modulebox_list a").not("#ensembles-link").click(function(e) {
+            e.preventDefault();
+            var postID = $(this).data("id");
+
+            $.ajax({
+                url: ajax_object.ajaxurl,
+                type: "POST",
+                data: {
+                    action: "load_modulebox",
+                    module_id: postID,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the gallery (left col-7)
+                        $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+                        // Update the content (right col-5)
+                        $(".module-details").html(response.data.content);
+
+                        // Switch visibility
+                        $("#modules-list-container").removeClass("col-12").addClass("col-5");
+                        $("#carousel-container").removeClass("d-none").addClass("col-7");
+
+                        // Reinitialize the carousel
+                        $("#modulesCarousel").carousel();
+
+                        // Reattach event handlers for the new content
+                        attachEventHandlers();
+                    } else {
+                        alert("Failed to load content.");
+                    }
+                },
+            });
+        });
+    }
+
+    function showEnsemblesContent() {
+        var ensemblesContent = '<div class="container"><div class="row">';
+        $('#modulebox_list a').not('#ensembles-link').each(function() {
+            var postID = $(this).data('id');
+            var ensemblesImage = $(this).data('ensembles-image');
+            if (ensemblesImage) {
+                ensemblesContent += `
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="#" data-id="${postID}" class="ensembles-item">
+                            <img src="${ensemblesImage}" class="img-fluid" alt="Ensembles Image">
+                        </a>
+                    </div>
+                `;
+            }
+        });
+        ensemblesContent += '</div></div>';
+        $(".module-details").html(ensemblesContent);
+
+        // Switch visibility
+        $("#modules-list-container").removeClass("col-5").addClass("col-12");
+        $("#carousel-container").addClass("d-none");
+
+        // Attach click event for the ensembles items
+        $(".ensembles-item").click(function(e) {
+            e.preventDefault();
+            var postID = $(this).data("id");
+            $.ajax({
+                url: ajax_object.ajaxurl,
+                type: "POST",
+                data: {
+                    action: "load_modulebox",
+                    module_id: postID,
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the gallery (left col-7)
+                        $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+                        // Update the content (right col-5)
+                        $(".module-details").html(response.data.content);
+
+                        // Switch visibility
+                        $("#modules-list-container").removeClass("col-12").addClass("col-5");
+                        $("#carousel-container").removeClass("d-none").addClass("col-7");
+
+                        // Reinitialize the carousel
+                        $("#modulesCarousel").carousel();
+
+                        // Reattach event handlers for the new content
+                        attachEventHandlers();
+                    } else {
+                        alert("Failed to load content.");
+                    }
+                },
+            });
+        });
+    }
+
+    // Attach initial event handlers
+    attachEventHandlers();
+
+    // Show ENSEMBLES content on page load
+    showEnsemblesContent();
+});
+</script>
+
 <?php
 get_footer();
 ?>
-
-2. functions.php:
+   
+3. functions.php
 <?php
 
 /**
@@ -98,7 +243,7 @@ foreach (glob(get_stylesheet_directory() . '/includes/modules/*.php') as $file) 
   require_once $file;
 }
 
-3. includes/enqueue-scripts.php:
+4. includes/enqueue-scripts.php
 <?php
 
 add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
@@ -127,7 +272,7 @@ function enqueue_ajax_script()
     wp_localize_script('modulebox-ajax', 'ajax_object', ['ajaxurl' => admin_url('admin-ajax.php')]);
 }
 
-4. includes/modules/ajax-handlers.php:
+4. includes/modules/ajax-handlers.php
 <?php
 
 // AJAX Handler for Content Update
@@ -181,7 +326,7 @@ function load_modulebox_content()
     wp_send_json_success(['gallery' => $gallery_content, 'content' => $content]);
 }
 
-5. includes/modules/custom-post-types.php:
+5. includes/modules/custom-post-types.php
 <?php
 
 // Register MODULEBOX Custom Post Type
@@ -199,7 +344,7 @@ function register_modulebox_cpt()
   ]);
 }
 
-6. includes/modules/meta-boxes.php:
+6. includes/modules/meta-boxes.php
 <?php
 
 // Add Gallery Functionality in the Editor
@@ -292,28 +437,30 @@ function save_modulebox_gallery($post_id)
     update_post_meta($post_id, '_modulebox_gallery', isset($_POST['modulebox_gallery']) ? array_map('intval', $_POST['modulebox_gallery']) : []);
 }
 
-7. assets/js/custom.js:
+8. assets/js/custom.js
 document.addEventListener("DOMContentLoaded", function () {
-    jQuery(document).ready(function ($) {
-      function attachEventHandlers() {
-        // Handle 'Go to Message Us' button click
-        $(".go-to-message-us")
-          .off("click")
-          .on("click", function () {
-            var postTitle = $(this).data("title");
-            $("#post-title").val(postTitle);
-            $("#your-subject").val(postTitle);
-          });
-      }
-  
-      // Attach initial event handlers
-      attachEventHandlers();
-  
+  jQuery(document).ready(function ($) {
+    function attachEventHandlers() {
+      // Handle 'Go to Message Us' button click
+      $(".go-to-message-us")
+        .off("click")
+        .on("click", function () {
+          var postTitle = $(this).data("title");
+          $("#post-title").val(postTitle);
+          $("#your-subject").val(postTitle);
+        });
+
+      // Handle "ENSEMBLES" link click
+      $("#ensembles-link").on("click", function(e) {
+        e.preventDefault();
+        showEnsemblesContent();
+      });
+
       // Handle module link click
-      $("#modulebox_list a").click(function (e) {
+      $("#modulebox_list a").not("#ensembles-link").click(function (e) {
         e.preventDefault();
         var postID = $(this).data("id");
-  
+
         $.ajax({
           url: ajax_object.ajaxurl,
           type: "POST",
@@ -325,13 +472,17 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.success) {
               // Update the gallery (left col-7)
               $("#modulesCarousel .carousel-inner").html(response.data.gallery);
-  
+
               // Update the content (right col-5)
               $(".module-details").html(response.data.content);
-  
+
+              // Switch visibility
+              $("#modules-list-container").removeClass("col-12").addClass("col-5");
+              $("#carousel-container").removeClass("d-none").addClass("col-7");
+
               // Reinitialize the carousel
               $("#modulesCarousel").carousel();
-  
+
               // Reattach event handlers for the new content
               attachEventHandlers();
             } else {
@@ -340,88 +491,73 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         });
       });
-    });
+    }
+
+    function showEnsemblesContent() {
+      var ensemblesContent = '<div class="container"><div class="row">';
+      $('#modulebox_list a').not('#ensembles-link').each(function() {
+        var postID = $(this).data('id');
+        var ensemblesImage = $(this).data('ensembles-image');
+        if (ensemblesImage) {
+          ensemblesContent += `
+            <div class="col-12 col-md-6 col-lg-4">
+              <a href="#" data-id="${postID}" class="ensembles-item">
+                <img src="${ensemblesImage}" class="img-fluid" alt="Ensembles Image">
+              </a>
+            </div>
+          `;
+        }
+      });
+      ensemblesContent += '</div></div>';
+      $(".module-details").html(ensemblesContent);
+
+      // Switch visibility
+      $("#modules-list-container").removeClass("col-5").addClass("col-12");
+      $("#carousel-container").addClass("d-none");
+
+      // Attach click event for the ensembles items
+      $(".ensembles-item").click(function(e) {
+        e.preventDefault();
+        var postID = $(this).data("id");
+        $.ajax({
+          url: ajax_object.ajaxurl,
+          type: "POST",
+          data: {
+            action: "load_modulebox",
+            module_id: postID,
+          },
+          success: function(response) {
+            if (response.success) {
+              // Update the gallery (left col-7)
+              $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+              // Update the content (right col-5)
+              $(".module-details").html(response.data.content);
+
+              // Switch visibility
+              $("#modules-list-container").removeClass("col-12").addClass("col-5");
+              $("#carousel-container").removeClass("d-none").addClass("col-7");
+
+              // Reinitialize the carousel
+              $("#modulesCarousel").carousel();
+
+              // Reattach event handlers for the new content
+              attachEventHandlers();
+            } else {
+              alert("Failed to load content.");
+            }
+          },
+        });
+      });
+    }
+
+    // Attach initial event handlers
+    attachEventHandlers();
+
+    // Show ENSEMBLES content on page load
+    showEnsemblesContent();
   });
-  
-8. assets/scss/aaa_bootscore-custom.scss:
-.carousel-item {
-    height: 100%;
-  }
-  
-  .carousel-item img {
-    object-fit: cover;
-    height: 100%;
-    width: 100%;
-  }
-  
-  .module-details {
-    img {
-      width: 248px;
-    }
-  }
-  
-  .module-details {
-    display: flex;
-    flex-direction: column;
-  
-    img {
-      width: 248px;
-    }
-  
-    .btn {
-      width: 248px;
-      padding: 20px;
-    }
-  }
-  
-  .carousel-item {
-    height: 100%;
-  }
-  
-  .carousel-item img {
-    object-fit: cover;
-    height: 100%;
-    width: 100%;
-  }
-  
-  .lightbox {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    padding-top: 60px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.9);
-  }
-  
-  .lightbox-content {
-    margin: auto;
-    display: block;
-    width: 80%;
-    max-width: 700px;
-  }
-  
-  .close {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #fff;
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
-    cursor: pointer;
-  }
-  
-  .close:hover,
-  .close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-Each file's content is presented within code blocks, making it easy to read and understand.
+});
 
 
+   
