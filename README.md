@@ -1,23 +1,27 @@
-INVOLVED FILES:
-1. front-page.php
-2. functions.php
-3. includes/enqueue-scripts.php
-4. includes/modules/ajax-handlers.php
-5. includes/modules/custom-post-types.php
-6. includes/modules/meta-boxes.php
-7. assets/js/custom.js
+## Current Setup
 
-CONTENTs OF ALL FILES:
+### File List:
+1. [front-page.php](#front-pagephp)
+2. [functions.php](#functionsphp)
+3. [includes/enqueue-scripts.php](#includesenqueue-script.php)
+4. [includes/modules/ajax-handlers.php](#includesmodulesajax-handlersphp)
+5. [includes/modules/custom-post-types.php](#includesmodulescustom-post-typesphp)
+6. [includes/modules/meta-boxes.php](#includesmodulesmeta-boxesphp)
+7. [assets/js/custom.js](#assetsjscustomjs)
+8. [assets/scss/_bootscore-custom.scss](#assetsscssaaa_bootscore-customscss)
 
-1. front-page.php
+### File Contents:
+
+#### 1. front-page.php:
+```php name=front-page.php
 <?php
 get_header(); ?>
 
 <div class="container-fluid h-100">
     <div class="row h-100">
         <!-- Gallery Section (Left) -->
-        <div id="carousel-container" class="col-7 d-flex justify-content-center align-items-center vh-100 d-none">
-            <div id="modulesCarousel" class="carousel slide h-100 w-100 pointer-event" data-bs-ride="carousel">
+        <div class="col-7 d-flex justify-content-center align-items-center vh-100">
+            <div id="modulesCarousel" class="carousel slide h-100 w-100" data-bs-ride="carousel">
                 <div class="carousel-inner h-100">
                     <?php
                     $gallery = get_post_meta(get_the_ID(), '_modulebox_gallery', true);
@@ -48,15 +52,13 @@ get_header(); ?>
         </div>
 
         <!-- Module List & Details -->
-        <div id="modules-list-container" class="col-12 d-flex flex-column justify-content-start">
+        <div class="col-5 d-flex flex-column justify-content-start">
             <div id="modulebox_list">
-                <a href="#" id="ensembles-link">ENSEMBLES</a>
                 <?php
                 $modules = new WP_Query(['post_type' => 'modulebox', 'posts_per_page' => -1]);
                 if ($modules->have_posts()) :
-                    while ($modules->have_posts()) : $modules->the_post(); 
-                        $ensembles_image = get_post_meta(get_the_ID(), '_ensembles_image', true); ?>
-                <a href="#" data-id="<?php the_ID(); ?>" data-ensembles-image="<?php echo esc_url($ensembles_image); ?>"><?php the_title(); ?></a>
+                    while ($modules->have_posts()) : $modules->the_post(); ?>
+                <a href="#" data-id="<?php the_ID(); ?>"><?php the_title(); ?></a>
                 <?php endwhile;
                     wp_reset_postdata();
                 endif;
@@ -77,130 +79,13 @@ get_header(); ?>
     </div>
 </div>
 
-<script>
-jQuery(document).ready(function($) {
-    function attachEventHandlers() {
-        // Handle 'Go to Message Us' button click
-        $(".go-to-message-us").off("click").on("click", function() {
-            var postTitle = $(this).data("title");
-            $("#post-title").val(postTitle);
-            $("#your-subject").val(postTitle);
-        });
-
-        // Handle "ENSEMBLES" link click
-        $("#ensembles-link").on("click", function(e) {
-            e.preventDefault();
-            showEnsemblesContent();
-        });
-
-        // Handle module link click
-        $("#modulebox_list a").not("#ensembles-link").click(function(e) {
-            e.preventDefault();
-            var postID = $(this).data("id");
-
-            $.ajax({
-                url: ajax_object.ajaxurl,
-                type: "POST",
-                data: {
-                    action: "load_modulebox",
-                    module_id: postID,
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Update the gallery (left col-7)
-                        $("#modulesCarousel .carousel-inner").html(response.data.gallery);
-
-                        // Update the content (right col-5)
-                        $(".module-details").html(response.data.content);
-
-                        // Switch visibility
-                        $("#modules-list-container").removeClass("col-12").addClass("col-5");
-                        $("#carousel-container").removeClass("d-none").addClass("col-7");
-
-                        // Reinitialize the carousel
-                        $("#modulesCarousel").carousel();
-
-                        // Reattach event handlers for the new content
-                        attachEventHandlers();
-                    } else {
-                        alert("Failed to load content.");
-                    }
-                },
-            });
-        });
-    }
-
-    function showEnsemblesContent() {
-        var ensemblesContent = '<div class="container"><div class="row">';
-        $('#modulebox_list a').not('#ensembles-link').each(function() {
-            var postID = $(this).data('id');
-            var ensemblesImage = $(this).data('ensembles-image');
-            if (ensemblesImage) {
-                ensemblesContent += `
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <a href="#" data-id="${postID}" class="ensembles-item">
-                            <img src="${ensemblesImage}" class="img-fluid" alt="Ensembles Image">
-                        </a>
-                    </div>
-                `;
-            }
-        });
-        ensemblesContent += '</div></div>';
-        $(".module-details").html(ensemblesContent);
-
-        // Switch visibility
-        $("#modules-list-container").removeClass("col-5").addClass("col-12");
-        $("#carousel-container").addClass("d-none");
-
-        // Attach click event for the ensembles items
-        $(".ensembles-item").click(function(e) {
-            e.preventDefault();
-            var postID = $(this).data("id");
-            $.ajax({
-                url: ajax_object.ajaxurl,
-                type: "POST",
-                data: {
-                    action: "load_modulebox",
-                    module_id: postID,
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Update the gallery (left col-7)
-                        $("#modulesCarousel .carousel-inner").html(response.data.gallery);
-
-                        // Update the content (right col-5)
-                        $(".module-details").html(response.data.content);
-
-                        // Switch visibility
-                        $("#modules-list-container").removeClass("col-12").addClass("col-5");
-                        $("#carousel-container").removeClass("d-none").addClass("col-7");
-
-                        // Reinitialize the carousel
-                        $("#modulesCarousel").carousel();
-
-                        // Reattach event handlers for the new content
-                        attachEventHandlers();
-                    } else {
-                        alert("Failed to load content.");
-                    }
-                },
-            });
-        });
-    }
-
-    // Attach initial event handlers
-    attachEventHandlers();
-
-    // Show ENSEMBLES content on page load
-    showEnsemblesContent();
-});
-</script>
-
 <?php
 get_footer();
 ?>
-   
-2. functions.php
+```
+
+#### 2. functions.php:
+```php name=functions.php
 <?php
 
 /**
@@ -217,39 +102,34 @@ require_once get_stylesheet_directory() . '/includes/enqueue-scripts.php';
 
 // Include additional files from the modules directory
 foreach (glob(get_stylesheet_directory() . '/includes/modules/*.php') as $file) {
-  require_once $file;
+    require_once $file;
 }
+```
 
-3. includes/enqueue-scripts.php
+#### 3. includes/enqueue-scripts.php:
+```php name=includes/enqueue-scripts.php
 <?php
 
-add_action('wp_enqueue_scripts', 'bootscore_child_enqueue_styles');
-function bootscore_child_enqueue_styles()
-{
-    $theme_dir = get_stylesheet_directory_uri();
-    $theme_path = get_stylesheet_directory();
-
-    // Enqueue styles
-    wp_enqueue_style('main', "$theme_dir/assets/css/main.css", ['parent-style'], date('YmdHi', filemtime("$theme_path/assets/css/main.css")));
-    wp_enqueue_style('parent-style', get_template_directory_uri() . '/style.css');
-    wp_enqueue_style('lightbox-css', "$theme_dir/assets/css/styles.css");
-
-    // Enqueue scripts
-    wp_enqueue_script('custom-js', "$theme_dir/assets/js/custom.js", ['jquery'], date('YmdHi', filemtime("$theme_path/assets/js/custom.js")), true);
-    wp_enqueue_script('lightbox-js', "$theme_dir/assets/js/scripts.js", ['jquery'], null, true);
-}
-
 /**
- * Enqueue AJAX script for Modulebox
+ * @package Bootscore Child
+ *
+ * @version 6.0.0
  */
-add_action('wp_enqueue_scripts', 'enqueue_ajax_script');
-function enqueue_ajax_script()
-{
-    wp_enqueue_script('modulebox-ajax', get_stylesheet_directory_uri() . '/js/modulebox-ajax.js', ['jquery'], null, true);
-    wp_localize_script('modulebox-ajax', 'ajax_object', ['ajaxurl' => admin_url('admin-ajax.php')]);
-}
 
-4. includes/modules/ajax-handlers.php
+// Exit if accessed directly
+defined('ABSPATH') || exit;
+
+// Enqueue scripts and styles
+require_once get_stylesheet_directory() . '/includes/enqueue-scripts.php';
+
+// Include additional files from the modules directory
+foreach (glob(get_stylesheet_directory() . '/includes/modules/*.php') as $file) {
+    require_once $file;
+}
+```
+
+#### 4. includes/modules/ajax-handlers.php:
+```php name=includes/modules/ajax-handlers.php
 <?php
 
 // AJAX Handler for Content Update
@@ -302,8 +182,10 @@ function load_modulebox_content()
 
     wp_send_json_success(['gallery' => $gallery_content, 'content' => $content]);
 }
+```
 
-5. includes/modules/custom-post-types.php
+#### 5. includes/modules/custom-post-types.php:
+```php name=includes/modules/custom-post-types.php
 <?php
 
 // Register MODULEBOX Custom Post Type
@@ -320,8 +202,10 @@ function register_modulebox_cpt()
     'rewrite'       => ['slug' => 'modulebox'],
   ]);
 }
+```
 
-6. includes/modules/meta-boxes.php
+#### 6. includes/modules/meta-boxes.php:
+```php name=includes/modules/meta-boxes.php
 <?php
 
 // Add Gallery Functionality in the Editor
@@ -335,7 +219,7 @@ function modulebox_gallery_callback($post)
 {
     wp_nonce_field('modulebox_gallery_nonce', 'modulebox_gallery_nonce_field');
     $gallery = get_post_meta($post->ID, '_modulebox_gallery', true) ?: [];
-?>
+    ?>
 <div id="modulebox-gallery-container">
     <?php foreach ($gallery as $image_id) : ?>
     <div class="gallery-image">
@@ -356,9 +240,7 @@ jQuery(document).ready(function($) {
         frame = wp.media({
             title: '<?php _e('Select Images', 'textdomain'); ?>',
             multiple: true,
-            library: {
-                type: 'image'
-            }
+            library: { type: 'image' }
         }).on('select', function() {
             let images = frame.state().get('selection').toJSON();
             images.forEach(image => {
@@ -413,8 +295,10 @@ function save_modulebox_gallery($post_id)
 
     update_post_meta($post_id, '_modulebox_gallery', isset($_POST['modulebox_gallery']) ? array_map('intval', $_POST['modulebox_gallery']) : []);
 }
+```
 
-7. assets/js/custom.js
+#### 7. assets/js/custom.js:
+```javascript name=assets/js/custom.js
 document.addEventListener("DOMContentLoaded", function () {
   jQuery(document).ready(function ($) {
     function attachEventHandlers() {
@@ -426,115 +310,117 @@ document.addEventListener("DOMContentLoaded", function () {
           $("#post-title").val(postTitle);
           $("#your-subject").val(postTitle);
         });
-
-      // Handle "ENSEMBLES" link click
-      $("#ensembles-link").on("click", function(e) {
-        e.preventDefault();
-        showEnsemblesContent();
-      });
-
-      // Handle module link click
-      $("#modulebox_list a").not("#ensembles-link").click(function (e) {
-        e.preventDefault();
-        var postID = $(this).data("id");
-
-        $.ajax({
-          url: ajax_object.ajaxurl,
-          type: "POST",
-          data: {
-            action: "load_modulebox",
-            module_id: postID,
-          },
-          success: function (response) {
-            if (response.success) {
-              // Update the gallery (left col-7)
-              $("#modulesCarousel .carousel-inner").html(response.data.gallery);
-
-              // Update the content (right col-5)
-              $(".module-details").html(response.data.content);
-
-              // Switch visibility
-              $("#modules-list-container").removeClass("col-12").addClass("col-5");
-              $("#carousel-container").removeClass("d-none").addClass("col-7");
-
-              // Reinitialize the carousel
-              $("#modulesCarousel").carousel();
-
-              // Reattach event handlers for the new content
-              attachEventHandlers();
-            } else {
-              alert("Failed to load content.");
-            }
-          },
-        });
-      });
-    }
-
-    function showEnsemblesContent() {
-      var ensemblesContent = '<div class="container"><div class="row">';
-      $('#modulebox_list a').not('#ensembles-link').each(function() {
-        var postID = $(this).data('id');
-        var ensemblesImage = $(this).data('ensembles-image');
-        if (ensemblesImage) {
-          ensemblesContent += `
-            <div class="col-12 col-md-6 col-lg-4">
-              <a href="#" data-id="${postID}" class="ensembles-item">
-                <img src="${ensemblesImage}" class="img-fluid" alt="Ensembles Image">
-              </a>
-            </div>
-          `;
-        }
-      });
-      ensemblesContent += '</div></div>';
-      $(".module-details").html(ensemblesContent);
-
-      // Switch visibility
-      $("#modules-list-container").removeClass("col-5").addClass("col-12");
-      $("#carousel-container").addClass("d-none");
-
-      // Attach click event for the ensembles items
-      $(".ensembles-item").click(function(e) {
-        e.preventDefault();
-        var postID = $(this).data("id");
-        $.ajax({
-          url: ajax_object.ajaxurl,
-          type: "POST",
-          data: {
-            action: "load_modulebox",
-            module_id: postID,
-          },
-          success: function(response) {
-            if (response.success) {
-              // Update the gallery (left col-7)
-              $("#modulesCarousel .carousel-inner").html(response.data.gallery);
-
-              // Update the content (right col-5)
-              $(".module-details").html(response.data.content);
-
-              // Switch visibility
-              $("#modules-list-container").removeClass("col-12").addClass("col-5");
-              $("#carousel-container").removeClass("d-none").addClass("col-7");
-
-              // Reinitialize the carousel
-              $("#modulesCarousel").carousel();
-
-              // Reattach event handlers for the new content
-              attachEventHandlers();
-            } else {
-              alert("Failed to load content.");
-            }
-          },
-        });
-      });
     }
 
     // Attach initial event handlers
     attachEventHandlers();
 
-    // Show ENSEMBLES content on page load
-    showEnsemblesContent();
+    // Handle module link click
+    $("#modulebox_list a").click(function (e) {
+      e.preventDefault();
+      var postID = $(this).data("id");
+
+      $.ajax({
+        url: ajax_object.ajaxurl,
+        type: "POST",
+        data: {
+          action: "load_modulebox",
+          module_id: postID,
+        },
+        success: function (response) {
+          if (response.success) {
+            // Update the gallery (left col-7)
+            $("#modulesCarousel .carousel-inner").html(response.data.gallery);
+
+            // Update the content (right col-5)
+            $(".module-details").html(response.data.content);
+
+            // Reinitialize the carousel
+            $("#modulesCarousel").carousel();
+
+            // Reattach event handlers for the new content
+            attachEventHandlers();
+          } else {
+            alert("Failed to load content.");
+          }
+        },
+      });
+    });
   });
 });
+```
 
+#### 8. assets/scss/aaa_bootscore-custom.scss:
+```scss name=assets/scss/aaa_bootscore-custom.scss
+  .module-details {
+    display: flex;
+    flex-direction: column;
+  
+    img {
+      width: 248px;
+    }
+  
+    .btn {
+      width: 248px;
+      padding: 20px;
+    }
+  }
+  .carousel-item {
+    height: 100%;
+  }
+  
+  .carousel-item img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+  }
+  
 
-   
+  .carousel-item {
+    height: 100%;
+  }
+  
+  .carousel-item img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .lightbox {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+  
+  .lightbox-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+  }
+  
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+  }
+```
